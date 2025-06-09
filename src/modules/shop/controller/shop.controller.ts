@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response, RequestHandler } from "express";
 import responses, { ResponseProps } from "@utils/responses";
 import { getshopusecase } from "../usecase/shop.usecase";
 
