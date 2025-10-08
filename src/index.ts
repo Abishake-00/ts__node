@@ -1,14 +1,16 @@
 import express, { Request, Response } from "express";
-import { BASE_PATH, ENV, PORT } from "./config/index";
+import { BASE_PATH, ENV } from "./config/index";
 import { HHH } from "./routes";
 
 const app = express();
 
 app.use(express.json());
-
 app.use(`/${BASE_PATH}`, HHH);
 
-app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
-    console.log(`PORT at: ${PORT}`);
+const port = Number(process.env.PORT) || 3000;
+
+app.listen(port, "0.0.0.0", () => {
+    console.log(
+        `✅ Server is running on port ${port} in ${ENV || "development"} mode`
+    );
 });
