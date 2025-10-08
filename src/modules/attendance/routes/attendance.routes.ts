@@ -1,7 +1,8 @@
-import { Router } from "express";
+// import { Router, Request, Response } from "express";
 
-const attendanceRouter = Router();
+// const attendanceRouter = Router();
 
-attendanceRouter.post("/");
+// // Login endpoint
+// attendanceRouter.post("/login");
 
-export default attendanceRouter;
+// export default attendanceRouter;
