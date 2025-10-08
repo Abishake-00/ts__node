@@ -1,0 +1,10 @@
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Float
+  isActive  Boolean  @default(true)
+  shopId    Int
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
