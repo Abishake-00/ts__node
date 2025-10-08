@@ -1,16 +1,14 @@
 import express, { Request, Response } from "express";
-import { BASE_PATH } from "@config/index";
+import { BASE_PATH, ENV, PORT } from "./config/index";
 import { HHH } from "./routes";
 
 const app = express();
+
 app.use(express.json());
 
 app.use(`/${BASE_PATH}`, HHH);
 
-app.get("/", (req: Request, res: Response) => {
-    res.send("🚀 Express backend deployed on Vercel!");
+app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`PORT at: ${PORT}`);
 });
-
-// ❌ Remove app.listen()
-// ✅ Instead export the app
-export default app;
