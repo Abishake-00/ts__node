@@ -9,6 +9,10 @@ app.use(`/${BASE_PATH}`, HHH);
 
 const port = Number(process.env.PORT) || 3000;
 
+app.get("/health", (_req, res) => {
+    res.json({ status: "ok" });
+});
+
 app.listen(port, "0.0.0.0", () => {
     console.log(
         `✅ Server is running on port ${port} in ${ENV || "development"} mode`

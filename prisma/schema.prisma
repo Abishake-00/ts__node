@@ -1,0 +1,50 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+
+model AttendanceData {
+  id        String   @id @default(uuid())
+  userId    String
+  date      DateTime @db.Date
+  type      ScheduleType
+  time      String
+  lat       String?
+  lng       String?
+  attendanceLocTypeId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([date, type])
+  @@index([date])
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String  
+  name      String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendance  AttendanceData[]
+
+  @@index([username])
+}
+
+enum ScheduleType {
+  check_in
+  check_out
+}
