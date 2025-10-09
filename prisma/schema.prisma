@@ -17,13 +17,8 @@ model AttendanceData {
   date      DateTime @db.Date
   type      ScheduleType
   time      String
-  lat       String?
-  lng       String?
-  attendanceLocTypeId Int?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  attendanceLocTypeId Boolean @default(true)
+  isLeave Boolean @default(false)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@unique([date, type])
@@ -35,9 +30,12 @@ model User {
   username  String   @unique
   password  String  
   name      String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userDeviceId String?
+  deviceType String?
+  officeLat String
+  officeLng String
+  homeLat String
+  homeLng String
 
   attendance  AttendanceData[]
 
