@@ -2,6 +2,9 @@ name: Test SSH
 
 on:
   workflow_dispatch:
+  push:
+        branches:
+            - main
 
 jobs:
   test-ssh:
