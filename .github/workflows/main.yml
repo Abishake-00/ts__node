@@ -1,0 +1,16 @@
+name: Test SSH
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-ssh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test SSH to EC2
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+      - name: Check EC2
+        run: ssh -o StrictHostKeyChecking=no deploy@3.110.160.251 "echo 'SSH works!'"
+
