@@ -26,7 +26,7 @@ export class AttendanceController {
 
   static async loginAndMark(req: Request, res: Response) {
     try {
-        const status = ""
+        const status = req.query.status as string
       const loginResults = await attendanceService.loginAllUsers(status);
       res.status(200).json({ success: true, loginResults });
     } catch (err: any) {

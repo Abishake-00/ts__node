@@ -91,8 +91,7 @@ async loginAllUsers(status : string) {
       console.log(`✅ Logged in: ${username}`);
 
       // Step 2️⃣: Find today's attendance entry
-      const today = new Date().toLocaleDateString();
-      
+      const today = new Date().toLocaleDateString('en-US').replace(/\//g, '-'); 
 
       const todaysData = await prisma.attendanceData.findFirst({
         where: {
@@ -129,7 +128,7 @@ async loginAllUsers(status : string) {
           lat,
           lng,
           attendanceLocTypeId: todaysData.attendanceLocTypeId === true ? 2 : 5,
-          status
+          status : status === "in" ? "check_in" :"check_out"
         }),
       });
 
