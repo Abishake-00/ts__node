@@ -174,7 +174,7 @@ public async generateMonthlyAttendance() {
     const yearStr = d.getFullYear();
     return `${monthStr}-${dayStr}-${yearStr}`;
   });
-
+ 
   for (const user of users) {
     const userId = user.id;
 
