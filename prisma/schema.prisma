@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider  = "mysql"
   url  	    = env("DATABASE_URL")
   // uncomment next line if you use Prisma <5.10
   // directUrl = env("DATABASE_URL_UNPOOLED")
@@ -14,15 +14,19 @@ datasource db {
 model AttendanceData {
   id        String   @id @default(uuid())
   userId    String
-  date      DateTime @db.Date
+  date      String
   type      ScheduleType
-  time      String
+  time      String?
+  attendanceType String
   attendanceLocTypeId Boolean @default(true)
   isLeave Boolean @default(false)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  @@unique([date, type])
+  // @@unique([type])
   @@index([date])
+  @@index([userId])
+  @@index([type])
+  @@index([attendanceLocTypeId])
 }
 
 model User {
@@ -40,6 +44,7 @@ model User {
   attendance  AttendanceData[]
 
   @@index([username])
+  @@index([name])
 }
 
 enum ScheduleType {

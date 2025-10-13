@@ -26,3 +26,4 @@ export const PORT = getEnvVariable("APP_PORT", { defaultValue: "3000" });
 export const ENV = getEnvVariable("NODE_ENV", { defaultValue: "development" });
 export const BASE_PATH = getEnvVariable("APP_BASE_PATH");
 export const HRMS_URL = getEnvVariable("HRMS_URL");
+export const ATTENDANCE_URL = getEnvVariable("ATTENDANCE_URL")

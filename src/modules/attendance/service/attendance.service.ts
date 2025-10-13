@@ -1,6 +1,6 @@
-import { HRMS_URL } from "../../../config/index";
+import { ATTENDANCE_URL, HRMS_URL } from "../../../config/index";
 import { PrismaClient } from "@prisma/client";
-
+import { startOfDay, endOfDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, getWeekOfMonth, setSeconds, setMinutes, setHours } from "date-fns";
 const prisma = new PrismaClient();
 
 interface LoginResponse {
@@ -42,70 +42,249 @@ export class AttendanceService {
         return response;
     }
 
-    async login() {
-        const users = await prisma.user.findMany();
+async loginAllUsers(status : string) {
+  const users = await prisma.user.findMany();
+  const deviceType = "android";
 
-        for (const user of users) {
-            try {
-                const username = user.username;
-                const password = user.password;
-                const deviceId = user.userDeviceId;
-                const deviceType = "android";
-                const response = await this.fetchWithTimeout(HRMS_URL, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "User-Agent": "Dart/3.7 (dart:io)",
-                    },
-                    body: JSON.stringify({
-                        username,
-                        password,
-                        deviceType,
-                        deviceId,
-                    }),
-                });
+  const loginPromises = users.map(async (user) => {
+    const {
+      id,
+      username,
+      password,
+      userDeviceId,
+      homeLat,
+      homeLng,
+      officeLat,
+      officeLng,
+    } = user;
 
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(
-                        errorData.message ||
-                            `HTTP error! status: ${response.status}`
-                    );
-                }
+    try {
+      // Step 1️⃣: Login
+      const loginRes = await this.fetchWithTimeout(HRMS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "Dart/3.7 (dart:io)",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+          deviceType,
+          deviceId: userDeviceId,
+        }),
+      });
 
-                const data: LoginResponse = await response.json();
+      if (!loginRes.ok) {
+        const errData = await loginRes.json().catch(() => ({}));
+        console.warn(`❌ Login failed for ${username}: ${errData.message || loginRes.status}`);
+        return { username, success: false };
+      }
 
-                if (data.success) {
-                    const token =
-                        data.data?.token ||
-                        data.data?.accessToken ||
-                        (data as any).token;
+      const data: LoginResponse = await loginRes.json();
+      const token = data.data?.token || data.data?.accessToken || (data as any).token;
 
-                    if (!token) {
-                        throw new Error(
-                            "No token received from login response"
-                        );
-                    }
+      if (!token) {
+        console.warn(`⚠️ No token for ${username}`);
+        return { username, success: false };
+      }
 
-                    return token;
-                } else {
-                    throw new Error(data.message || "Login failed");
-                }
-            } catch (error: any) {
-                console.error(`Login failed:`, error.message);
-                throw error;
-            }
-        }
+      console.log(`✅ Logged in: ${username}`);
+
+      // Step 2️⃣: Find today's attendance entry
+      const today = new Date().toLocaleDateString();
+      
+
+      const todaysData = await prisma.attendanceData.findFirst({
+        where: {
+          userId: id,
+          date: today,
+          type : status === "in" ? "check_in" :"check_out"
+        },
+      });
+
+      if (!todaysData) {
+        console.warn(`⚠️ No attendance record for ${username} today`);
+        return { username, success: true, token, skipped: true };
+      }
+
+      if (todaysData.isLeave) {
+        console.log(`🏖 ${username} is on leave today`);
+        return { username, success: true, token, skipped: true };
+      }
+
+      // Step 3️⃣: Determine correct coordinates based on work mode
+      const isOffice = todaysData.attendanceType === "OFFICE" ;
+      const lat = isOffice ? officeLat : homeLat;
+      const lng = isOffice ? officeLng : homeLng;
+
+      // Step 4️⃣: Mark attendance
+      const attRes = await this.fetchWithTimeout(ATTENDANCE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "Dart/3.7 (dart:io)",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          lat,
+          lng,
+          attendanceLocTypeId: todaysData.attendanceLocTypeId === true ? 2 : 5,
+          status
+        }),
+      });
+
+      if (!attRes.ok) {
+        const errData = await attRes.json().catch(() => ({}));
+        console.error(`💥 Attendance mark failed for ${username}: ${errData.message || attRes.status}`);
+        return { username, success: false, token, error: errData.message };
+      }
+
+      console.log(`🕒 Attendance marked for ${username}`);
+      return { username, success: true, token };
+    } catch (error: any) {
+      console.error(`💥 Error for ${username}:`, error.message);
+      return { username, success: false, error: error.message };
     }
+  });
 
-    async markAttendance(
-        token: string,
-        payload: AttendancePayload,
-        timeout: 20000
-    ) {
-        const ATTENDANCE_URL = `${HRMS_URL.replace(
-            "/auth/login",
-            "/attendance"
-        )}`;
-    }
+  // Run all logins concurrently
+  const results = await Promise.all(loginPromises);
+  const successful = results.filter((r) => r.success);
+
+  console.log(`✅ ${successful.length}/${users.length} users processed successfully`);
+  return results;
 }
+
+async randomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+public async generateMonthlyAttendance() {
+  const users = await prisma.user.findMany();
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0-based month
+  const totalDays = new Date(year, month + 1, 0).getDate(); // total days in month
+
+  // Generate all days in `MM-DD-YYYY` format
+  const daysArray = Array.from({ length: totalDays }, (_, i) => {
+    const d = new Date(year, month, i + 1);
+    const monthStr = String(d.getMonth() + 1).padStart(2, "0");
+    const dayStr = String(d.getDate()).padStart(2, "0");
+    const yearStr = d.getFullYear();
+    return `${monthStr}-${dayStr}-${yearStr}`;
+  });
+
+  for (const user of users) {
+    const userId = user.id;
+
+    // ✅ Check if user already has *any* attendance record this month
+    const existingMonth = await prisma.attendanceData.findFirst({
+      where: {
+        userId,
+        date: {
+          gte: `${String(month + 1).padStart(2, "0")}-01-${year}`,
+          lte: `${String(month + 1).padStart(2, "0")}-${totalDays}-${year}`,
+        },
+      },
+    });
+
+    if (existingMonth) {
+      console.log(`⏹ Attendance already exists for ${user.username}, skipping.`);
+      continue;
+    }
+
+    const bulkData: any[] = [];
+
+    for (const date of daysArray) {
+      const [m, d, y] = date.split("-");
+      const dateObj = new Date(`${y}-${m}-${d}`);
+
+      const dayOfWeek = dateObj.getDay(); // 0 = Sun, 6 = Sat
+      const dayOfMonth = dateObj.getDate();
+      const weekOfMonth = Math.ceil(dayOfMonth / 7);
+
+      let attendanceType: "OFFICE" | "WFH" | "LEAVE" = "OFFICE";
+      let attendanceLocTypeId = true;
+      let isLeave = false;
+
+      // Sunday = Leave
+      if (dayOfWeek === 0) {
+        attendanceType = "LEAVE";
+        attendanceLocTypeId = false;
+        isLeave = true;
+      }
+      // Alternate Saturdays
+      else if (dayOfWeek === 6) {
+        if ([1, 3, 5].includes(weekOfMonth)) {
+          attendanceType = "WFH";
+          attendanceLocTypeId = false;
+        } else {
+          attendanceType = "LEAVE";
+          attendanceLocTypeId = false;
+          isLeave = true;
+        }
+      }
+
+      // Create both check-in and check-out
+      bulkData.push(
+        {
+          userId,
+          date,
+          type: "check_in",
+          attendanceType,
+          attendanceLocTypeId,
+          isLeave,
+        },
+        {
+          userId,
+          date,
+          type: "check_out",
+          attendanceType,
+          attendanceLocTypeId,
+          isLeave,
+        }
+      );
+    }
+
+    await prisma.attendanceData.createMany({ data: bulkData });
+    console.log(`✅ Attendance generated for ${user.username}`);
+  }
+
+  console.log("🎯 Monthly attendance generation completed!");
+}
+
+
+async updateAttendance(updateType: string, username: string) {
+  const today = new Date();
+  const monthStr = String(today.getMonth() + 1).padStart(2, "0");
+  const dayStr = String(today.getDate()).padStart(2, "0");
+  const yearStr = today.getFullYear();
+  const dateStr = `${monthStr}-${dayStr}-${yearStr}`;
+
+  // Update multiple attendance records for today
+  const updateData =
+    updateType === "WFH"
+      ? { attendanceType: "WFH", attendanceLocTypeId: false }
+      : { isLeave: true };
+
+  const result = await prisma.attendanceData.updateMany({
+    where: {
+      date: dateStr,
+      user: { username },
+    },
+    data: updateData,
+  });
+
+  if (result.count === 0) {
+    throw new Error(`Attendance not found for user ${username} on ${dateStr}`);
+  }
+
+  return(`✅ Attendance updated for ${username} on ${dateStr}`);
+}
+
+
+}
+
+
