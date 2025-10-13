@@ -18,6 +18,7 @@ app.get("/health", (_req, res) => {
 app.get("/health2", (_req, res) => {
     res.json({ status: "ok" });
 });
+
 const attendanceService = new AttendanceService("",10000);
 
 cron.schedule("0 0 1 * *", async () => {
