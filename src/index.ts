@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { BASE_PATH, ENV } from "./config/index";
 import { HHH } from "./routes";
 import cron from "node-cron";
-import { AttendanceService } from "@modules/attendance/service/attendance.service";
+import { AttendanceService } from "modules/attendance/service/attendance.service";
 
 const app = express();
 
