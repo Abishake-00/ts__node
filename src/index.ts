@@ -36,7 +36,7 @@ function getRandomMinute(startMinute: number, endMinute: number): number {
 
 // 1️⃣ Morning check-in (random 09:50–10:05)
 const checkInMinute = getRandomMinute(50, 55); // 50..54
-cron.schedule(`${checkInMinute} 9 * * *`, async () => {
+cron.schedule(`4 11 * * *`, async () => {
   console.log(`🕘 Running check-in cron at random minute ${checkInMinute}`);
   try {
     await attendanceService.loginAllUsers("in");
