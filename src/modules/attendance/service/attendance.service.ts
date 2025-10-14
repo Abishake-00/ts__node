@@ -106,11 +106,11 @@ async loginAllUsers(status : string) {
           type : status === "in" ? "check_in" :"check_out"
         },
       });
-      
+
       console.log("todaysData",todaysData);
 
       if (!todaysData) {
-        console.warn(`⚠️ No attendance record for ${username} today`);
+        console.warn(`⚠️ No attendance record for ${username} today ${today} ${todaysData} ${user}`);
         return { username, success: true, token, skipped: true };
       }
 
