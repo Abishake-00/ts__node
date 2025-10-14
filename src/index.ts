@@ -56,6 +56,17 @@ cron.schedule(`${checkOutMinute} 18 * * *`, async () => {
   }
 });
 
+function getRandomSecond(): number {
+  return Math.floor(Math.random() * 60); // 0–59
+}
+
+const randomSecond = getRandomSecond();
+
+// Example: run at a random second every minute
+cron.schedule(`${randomSecond} * * * * *`, async () => {
+  console.log(`Running at second ${randomSecond}`);
+});
+
 app.listen(port, "0.0.0.0", () => {
     console.log(
         `✅ Server is running on port ${port} in ${ENV || "development"} mode`
