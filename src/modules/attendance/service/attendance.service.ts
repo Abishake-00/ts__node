@@ -57,7 +57,7 @@ async loginAllUsers(status : string) {
       officeLat,
       officeLng,
     } = user;
-
+    console.log("user",user);
     try {
       // Step 1️⃣: Login
       const loginRes = await this.fetchWithTimeout(HRMS_URL, {
@@ -131,7 +131,7 @@ async loginAllUsers(status : string) {
           status : status === "in" ? "check_in" :"check_out"
         }),
       });
-
+      console.log(attRes);
       if (!attRes.ok) {
         const errData = await attRes.json().catch(() => ({}));
         console.error(`💥 Attendance mark failed for ${username}: ${errData.message || attRes.status}`);
