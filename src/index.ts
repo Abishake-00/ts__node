@@ -36,16 +36,7 @@ function getRandomMinute(startMinute: number, endMinute: number): number {
 
 // 1️⃣ Morning check-in (random 09:50–10:05)
 const checkInMinute = getRandomMinute(50, 55); // 50..54
-cron.schedule(`10 11 * * *`, async () => {
-  console.log(`🕘 Running check-in cron at random minute ${checkInMinute}`);
-  try {
-    await attendanceService.loginAllUsers("in");
-  } catch (error) {
-    console.error("❌ Error in check-in cron:", error);
-  }
-});
-
-cron.schedule(`9 11 * * *`, async () => {
+cron.schedule(`${checkInMinute} 9 * * *`, async () => {
   console.log(`🕘 Running check-in cron at random minute ${checkInMinute}`);
   try {
     await attendanceService.loginAllUsers("in");
@@ -65,16 +56,9 @@ cron.schedule(`${checkOutMinute} 18 * * *`, async () => {
   }
 });
 
-function getRandomSecond(): number {
-  return Math.floor(Math.random() * 60); // 0–59
-}
-
-const randomSecond = getRandomSecond();
-
-// Example: run at a random second every minute
-cron.schedule(`${randomSecond} * * * * *`, async () => {
-  console.log(`Running at second ${randomSecond}`);
-});
+cron.schedule(`* * * * *`, async () => {
+    console.log("first");
+})
 
 app.listen(port, "0.0.0.0", () => {
     console.log(
