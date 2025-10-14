@@ -99,12 +99,6 @@ async loginAllUsers(status : string) {
       const year = istToday.getFullYear();
       const todayStr = `${month}-${day}-${year}`;
 
-      if(today) {
-      console.log("today",today);
-      }else {
-        console.log("today",today);
-      }
-
       const todaysData = await prisma.attendanceData.findFirst({
         where: {
           userId: id,
