@@ -116,7 +116,8 @@ async loginAllUsers(status : string) {
 
       if (!todaysData) {
       console.log("today",today);
-        console.warn(`⚠️ No attendance record for${today} ${username} today `);
+      console.warn(todayStr)
+        // console.warn(`⚠️ No attendance record for${today} ${username} today `);
         return { username, success: true, token, skipped: true };
       }
 
