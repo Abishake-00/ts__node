@@ -3,6 +3,7 @@ import { BASE_PATH, ENV } from "./config/index";
 import { HHH } from "./routes";
 import cron from "node-cron";
 import { AttendanceService } from "../src/modules/attendance/service/attendance.service";
+import 'dotenv/config';
 
 const app = express();
 

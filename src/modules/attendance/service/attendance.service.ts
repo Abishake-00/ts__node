@@ -93,9 +93,10 @@ async loginAllUsers(status : string) {
       // Step 2️⃣: Find today's attendance entry
       // const today = new Date().toLocaleDateString('en-US').replace(/\//g, '-'); 
       const today = new Date();
-      const month = String(today.getMonth() + 1).padStart(2, '0'); // 1–12
-      const day = String(today.getDate()).padStart(2, '0'); // 1–31
-      const year = today.getFullYear();
+      const istToday = new Date(today.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      const month = String(istToday.getMonth() + 1).padStart(2, '0');
+      const day = String(istToday.getDate()).padStart(2, '0');
+      const year = istToday.getFullYear();
       const todayStr = `${month}-${day}-${year}`;
 
       if(today) {
