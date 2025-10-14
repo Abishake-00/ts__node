@@ -57,7 +57,7 @@ async loginAllUsers(status : string) {
       officeLat,
       officeLng,
     } = user;
-    console.log("user",user);
+
     try {
       // Step 1️⃣: Login
       const loginRes = await this.fetchWithTimeout(HRMS_URL, {
@@ -92,7 +92,13 @@ async loginAllUsers(status : string) {
 
       // Step 2️⃣: Find today's attendance entry
       const today = new Date().toLocaleDateString('en-US').replace(/\//g, '-'); 
-      console.log(today);
+
+      if(today) {
+      console.log("today",today);
+      }else {
+        console.log("today",today);
+      }
+
       const todaysData = await prisma.attendanceData.findFirst({
         where: {
           userId: id,
@@ -100,6 +106,8 @@ async loginAllUsers(status : string) {
           type : status === "in" ? "check_in" :"check_out"
         },
       });
+      
+      console.log("todaysData",todaysData);
 
       if (!todaysData) {
         console.warn(`⚠️ No attendance record for ${username} today`);
@@ -131,7 +139,7 @@ async loginAllUsers(status : string) {
           status : status === "in" ? "check_in" :"check_out"
         }),
       });
-      console.log(attRes);
+      // console.log(attRes);
       if (!attRes.ok) {
         const errData = await attRes.json().catch(() => ({}));
         console.error(`💥 Attendance mark failed for ${username}: ${errData.message || attRes.status}`);
