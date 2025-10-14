@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 1: Setup SSH with your private key
+      # Setup SSH
       - name: Setup SSH
         uses: LuisEnMarroquin/setup-ssh-action@v2.0.0
         with:
@@ -22,7 +22,7 @@ jobs:
           USER: ${{ secrets.EC2_USERNAME }}
           ORIGIN: ${{ secrets.EC2_HOST }}
 
-      # Step 2: Run commands on EC2
+      # Run deploy script
       - name: Run deploy script on EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
