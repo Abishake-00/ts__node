@@ -134,7 +134,7 @@ async loginAllUsers(status : string) {
           lat,
           lng,
           attendanceLocTypeId: todaysData.attendanceLocTypeId === true ? 2 : 5,
-          status : status === "in" ? "check_in" :"check_out"
+          status : todaysData.type
         }),
       });
       // console.log(attRes);
