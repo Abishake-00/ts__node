@@ -24,7 +24,7 @@ jobs:
       # Step 3: Run commands on EC2
       - name: Run deploy script on EC2
         run: |
-          ssh -o ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
+          ssh -o StrictHostKeyChecking=yes ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
             echo '🚀 Starting deployment on EC2...'
             bash /home/deploy/deploy.sh
             echo '✅ Deployment completed!'
