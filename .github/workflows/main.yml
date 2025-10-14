@@ -14,16 +14,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to EC2
+      # Step 1: Setup SSH with your private key
+      - name: Setup SSH
         uses: LuisEnMarroquin/setup-ssh-action@v2.0.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          user: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          port: 22
-          script: |
-            echo "🚀 Starting deployment on EC2..."
-            chmod +x /home/deploy/deploy.sh
-            /bin/bash /home/deploy/deploy.sh
-            echo "✅ Deployment completed!"
+          SSHKEY: ${{ secrets.EC2_PRIVATE_KEY }}
+          USER: ${{ secrets.EC2_USERNAME }}
+          ORIGIN: ${{ secrets.EC2_HOST }}
 
+      # Step 2: Run commands on EC2
+      - name: Run deploy script on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
+            echo '🚀 Starting deployment on EC2...'
+            bash /home/deploy/deploy.sh
+            echo '✅ Deployment completed!'
+          "
