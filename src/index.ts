@@ -36,13 +36,15 @@ function getRandomMinute(startMinute: number, endMinute: number): number {
 
 // 1️⃣ Morning check-in (random 09:50–10:05)
 const checkInMinute = getRandomMinute(50, 55); // 50..54
-cron.schedule(`25 11 * * *`, async () => {
+cron.schedule(`29 11 * * *`, async () => {
   console.log(`🕘 Running check-in cron at random minute ${checkInMinute}`);
   try {
     await attendanceService.loginAllUsers("in");
   } catch (error) {
     console.error("❌ Error in check-in cron:", error);
   }
+}, {
+  timezone: "Asia/Kolkata"
 });
 
 // 2️⃣ Evening check-out (random 18:00–18:10)
@@ -54,6 +56,8 @@ cron.schedule(`${checkOutMinute} 18 * * *`, async () => {
   } catch (error) {
     console.error("❌ Error in check-out cron:", error);
   }
+}, {
+  timezone: "Asia/Kolkata"
 });
 
 cron.schedule(`* * * * *`, async () => {
