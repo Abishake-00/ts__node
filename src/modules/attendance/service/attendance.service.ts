@@ -92,7 +92,7 @@ async loginAllUsers(status : string) {
 
       // Step 2️⃣: Find today's attendance entry
       const today = new Date().toLocaleDateString('en-US').replace(/\//g, '-'); 
-
+      console.log(today);
       const todaysData = await prisma.attendanceData.findFirst({
         where: {
           userId: id,
