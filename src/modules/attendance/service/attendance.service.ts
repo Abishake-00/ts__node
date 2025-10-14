@@ -91,7 +91,12 @@ async loginAllUsers(status : string) {
       console.log(`✅ Logged in: ${username}`);
 
       // Step 2️⃣: Find today's attendance entry
-      const today = new Date().toLocaleDateString('en-US').replace(/\//g, '-'); 
+      // const today = new Date().toLocaleDateString('en-US').replace(/\//g, '-'); 
+      const today = new Date();
+      const month = String(today.getMonth() + 1).padStart(2, '0'); // 1–12
+      const day = String(today.getDate()).padStart(2, '0'); // 1–31
+      const year = today.getFullYear();
+      const todayStr = `${month}-${day}-${year}`;
 
       if(today) {
       console.log("today",today);
@@ -102,7 +107,7 @@ async loginAllUsers(status : string) {
       const todaysData = await prisma.attendanceData.findFirst({
         where: {
           userId: id,
-          date: today,
+          date: todayStr,
           type : status === "in" ? "check_in" :"check_out"
         },
       });
