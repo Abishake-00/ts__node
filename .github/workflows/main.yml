@@ -11,16 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout your repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to EC2
-        uses: LuisEnMarroquin/setup-ssh-action@v2.0.0
+      # Step 2: Setup SSH agent with your private key
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            echo "🚀 Starting deployment on EC2..."
+          ssh-private-key: ${{ secrets.EC2_PRIVATE_KEY }}
+
+      # Step 3: Run commands on EC2
+      - name: Run deploy script on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "
+            echo '🚀 Starting deployment on EC2...'
             bash /home/deploy/deploy.sh
-            echo "✅ Deployment completed!"
+            echo '✅ Deployment completed!'
+          "
