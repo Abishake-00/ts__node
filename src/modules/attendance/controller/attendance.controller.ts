@@ -12,7 +12,7 @@ export class AttendanceController {
     } catch (err: any) {
       res.status(500).json({ success: false, message: err.message });
     }
-  }
+  } 
   static async update(req: Request, res: Response) {
     try {
         const updateType = req.query.updateType as string;
