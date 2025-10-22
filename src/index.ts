@@ -42,6 +42,7 @@ const checkInMinute = getRandomMinute(50, 55); // 50..54
 cron.schedule(`${checkInMinute} 9 * * *`, async () => {
   console.log(`🕘 Running check-in cron at random minute ${checkInMinute} ${new Date().toDateString()}`);
   try {
+    const delay = Math.floor(Math.random() * 180000);
     await attendanceService.loginAllUsers("in");
   } catch (error) {
     console.error("❌ Error in check-in cron:", error);

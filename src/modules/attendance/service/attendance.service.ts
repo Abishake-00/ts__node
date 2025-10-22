@@ -242,11 +242,25 @@ async loginAllUsers(status: string) {
       const lat = isOffice ? officeLat : homeLat;
       const lng = isOffice ? officeLng : homeLng;
 
+      if (!lat || !lng || lat === "" || lng === "") {
+                    console.error(
+                        `❌ Invalid coordinates for ${username}: lat=${lat}, lng=${lng}, mode=${
+                            isOffice ? "OFFICE" : "WFH"
+                        }`
+                    );
+                    return {
+                        username,
+                        success: false,
+                        error: "Invalid coordinates",
+                        skipped: true,
+                    };
+                }
+                
       // 🪶 Debug logs before hitting API
       console.log("🚀 About to hit ATTENDANCE_URL for:", username);
       console.log("➡️ Status being sent:", todaysData.type);
       console.log("📍 attendanceLocTypeId (raw):", todaysData.attendanceLocTypeId);
-      console.log("🪪 Token (first 10 chars):", token?.slice(0, 10));
+      console.log("🪪 Token (first 10 chars):", token);
       console.log("🌍 Payload:", { lat, lng, attendanceLocTypeId: todaysData.attendanceLocTypeId === true ? 2 : 5,status: todaysData.type });
 
       try {
@@ -266,8 +280,12 @@ async loginAllUsers(status: string) {
           }),
         });
 
-        console.log("📡 Response received for", username, ":", attRes.status);
+          const resBody = await attRes.json().catch(() => null);
 
+          console.log("📝 Attendance API Response Body:", resBody);
+
+        console.log("📡 Response received for", username, ":", attRes.status);
+        console.log(attRes);
         if (!attRes.ok) {
           const errData = await attRes.json().catch(() => ({}));
           console.error(`💥 Attendance mark failed for ${username}: ${errData.message || attRes.status}`);
