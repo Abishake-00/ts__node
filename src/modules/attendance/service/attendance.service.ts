@@ -285,7 +285,7 @@ async loginAllUsers(status: string) {
           console.log("📝 Attendance API Response Body:", resBody);
 
         console.log("📡 Response received for", username, ":", attRes.status);
-        console.log(attRes);
+        // console.log(attRes);
         if (!attRes.ok) {
           const errData = await attRes.json().catch(() => ({}));
           console.error(`💥 Attendance mark failed for ${username}: ${errData.message || attRes.status}`);
